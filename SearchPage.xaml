@@ -1,0 +1,125 @@
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using RecipeApp.Models;
+using RecipeApp.Services;
+using System.Collections.ObjectModel;
+using System.Xml.Linq;
+
+namespace RecipeApp.ViewModels
+{
+    public partial class AddRecipeViewModel : BaseViewModel
+    {
+        private readonly DatabaseContext _database;
+
+        [ObservableProperty]
+        private string name = string.Empty;
+
+        [ObservableProperty]
+        private string category = "Breakfast";
+
+        [ObservableProperty]
+        private int prepTime;
+
+        [ObservableProperty]
+        private string ingredientInput = string.Empty;
+
+        [ObservableProperty]
+        private string instructionInput = string.Empty;
+
+        [ObservableProperty]
+        private ObservableCollection<string> ingredients = new();
+
+        [ObservableProperty]
+        private ObservableCollection<string> instructions = new();
+
+        public List<string> Categories { get; } = new()
+        {
+            "Breakfast",
+            "Lunch",
+            "Dinner",
+            "Dessert",
+            "Snack"
+        };
+
+        public AddRecipeViewModel(DatabaseContext database)
+        {
+            _database = database;
+            Title = "Add Recipe";
+        }
+
+        [RelayCommand]
+        void AddIngredient()
+        {
+            if (!string.IsNullOrWhiteSpace(IngredientInput))
+            {
+                Ingredients.Add(IngredientInput.Trim());
+                IngredientInput = string.Empty;
+            }
+        }
+
+        [RelayCommand]
+        void RemoveIngredient(string ingredient)
+        {
+            Ingredients.Remove(ingredient);
+        }
+
+        [RelayCommand]
+        void AddInstruction()
+        {
+            if (!string.IsNullOrWhiteSpace(InstructionInput))
+            {
+                Instructions.Add(InstructionInput.Trim());
+                InstructionInput = string.Empty;
+            }
+        }
+
+        [RelayCommand]
+        void RemoveInstruction(string instruction)
+        {
+            Instructions.Remove(instruction);
+        }
+
+        [RelayCommand]
+        async Task SaveRecipe()
+        {
+            if (string.IsNullOrWhiteSpace(Name))
+            {
+                await Shell.Current.DisplayAlert("Error", "Please enter a recipe name", "OK");
+                return;
+            }
+
+            if (Ingredients.Count == 0)
+            {
+                await Shell.Current.DisplayAlert("Error", "Please add at least one ingredient", "OK");
+                return;
+            }
+
+            if (Instructions.Count == 0)
+            {
+                await Shell.Current.DisplayAlert("Error", "Please add at least one instruction", "OK");
+                return;
+            }
+
+            var recipe = new Recipe
+            {
+                Name = Name.Trim(),
+                Category = Category,
+                PrepTime = PrepTime,
+                Ingredients = new List<string>(Ingredients),
+                Instructions = new List<string>(Instructions),
+                IsFavorite = false
+            };
+
+            await _database.SaveRecipeAsync(recipe);
+
+            await Shell.Current.DisplayAlert("Success", "Recipe added successfully!", "OK");
+            await Shell.Current.GoToAsync("..");
+        }
+
+        [RelayCommand]
+        async Task Cancel()
+        {
+            await Shell.Current.GoToAsync("..");
+        }
+    }
+}

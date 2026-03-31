@@ -1,0 +1,37 @@
+﻿using System.Globalization;
+
+namespace RecipeApp.Converters
+{
+    public class TextColorConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            // Force return black color for any text
+            return Colors.Black;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class ForceVisibleTextConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            // If the value is a string, return it with a guarantee it will show
+            if (value is string text)
+            {
+                return string.IsNullOrEmpty(text) ? "[NO DATA]" : text;
+            }
+
+            return value?.ToString() ?? "[NULL]";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return value;
+        }
+    }
+}

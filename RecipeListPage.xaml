@@ -1,0 +1,93 @@
+﻿using System.Text.Json;
+using RecipeApp.ApiModels;
+
+namespace RecipeApp.Services
+{
+    public class MealDbService
+    {
+        private readonly HttpClient _httpClient;
+        private const string BaseUrl = "https://www.themealdb.com/api/json/v1/1";
+
+        public MealDbService()
+        {
+            _httpClient = new HttpClient();
+        }
+
+        public async Task<List<MealDbRecipe>> SearchRecipesByNameAsync(string searchTerm)
+        {
+            try
+            {
+                var url = $"{BaseUrl}/search.php?s={searchTerm}";
+                var response = await _httpClient.GetStringAsync(url);
+                var result = JsonSerializer.Deserialize<MealDbResponse>(response);
+
+                return result?.Meals ?? new List<MealDbRecipe>();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"API Error: {ex.Message}");
+                return new List<MealDbRecipe>();
+            }
+        }
+
+        public async Task<List<MealDbRecipe>> GetRecipesByCategoryAsync(string category)
+        {
+            try
+            {
+                var url = $"{BaseUrl}/filter.php?c={category}";
+                var response = await _httpClient.GetStringAsync(url);
+                var result = JsonSerializer.Deserialize<MealDbResponse>(response);
+
+                return result?.Meals ?? new List<MealDbRecipe>();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"API Error: {ex.Message}");
+                return new List<MealDbRecipe>();
+            }
+        }
+
+        public async Task<MealDbRecipe> GetRecipeByIdAsync(string id)
+        {
+            try
+            {
+                var url = $"{BaseUrl}/lookup.php?i={id}";
+                var response = await _httpClient.GetStringAsync(url);
+                var result = JsonSerializer.Deserialize<MealDbResponse>(response);
+
+                return result?.Meals?.FirstOrDefault();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"API Error: {ex.Message}");
+                return null;
+            }
+        }
+
+        public async Task<List<MealDbRecipe>> GetRandomRecipesAsync(int count = 5)
+        {
+            var recipes = new List<MealDbRecipe>();
+
+            try
+            {
+                for (int i = 0; i < count; i++)
+                {
+                    var url = $"{BaseUrl}/random.php";
+                    var response = await _httpClient.GetStringAsync(url);
+                    var result = JsonSerializer.Deserialize<MealDbResponse>(response);
+
+                    if (result?.Meals?.FirstOrDefault() is MealDbRecipe recipe)
+                    {
+                        recipes.Add(recipe);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"API Error: {ex.Message}");
+            }
+
+            return recipes;
+        }
+    }
+}
