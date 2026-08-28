@@ -1,6 +1,6 @@
 # RecipeBox - .NET MAUI Recipe Management Application
 
-A comprehensive cross-platform recipe management application built with .NET MAUI, featuring local SQLite storage, external API integration, and modern MVVM architecture.
+A comprehensive cross-platform recipe management application built with .NET MAUI, featuring local SQLite storage, external API integration, and modern MVVM architecture
 ——
 ## 📱 Features
 
